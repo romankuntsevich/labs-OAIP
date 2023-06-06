@@ -1,0 +1,138 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+struct Node {
+    string filename;
+    string creationDate;
+    Node* left;
+    Node* right;
+};
+
+class BinaryTree {
+private:
+    Node* root;
+
+public:
+    BinaryTree() {
+        root = nullptr;
+    }
+
+    ~BinaryTree() {
+        clear();
+    }
+
+    void insert(const string& filename, const string& creationDate) {
+        Node* newNode = new Node;
+        newNode->filename = filename;
+        newNode->creationDate = creationDate;
+        newNode->left = nullptr;
+        newNode->right = nullptr;
+
+        if (root == nullptr) {
+            root = newNode;
+        } else {
+            insertNode(root, newNode);
+        }
+    }
+
+    void removeOlderThan(const string& date) {
+        root = removeOlderNodes(root, date);
+    }
+
+    void displayInOrder() {
+        displayInOrderTraversal(root);
+    }
+
+    void clear() {
+        clearTree(root);
+        root = nullptr;
+    }
+
+private:
+    void insertNode(Node* currentNode, Node* newNode) {
+        if (newNode->filename < currentNode->filename) {
+            if (currentNode->left == nullptr) {
+                currentNode->left = newNode;
+            } else {
+                insertNode(currentNode->left, newNode);
+            }
+        } else if (newNode->filename > currentNode->filename) {
+            if (currentNode->right == nullptr) {
+                currentNode->right = newNode;
+            } else {
+                insertNode(currentNode->right, newNode);
+            }
+        }
+    }
+
+    Node* removeOlderNodes(Node* currentNode, const string& date) {
+        if (currentNode == nullptr) {
+            return nullptr;
+        }
+
+        if (currentNode->creationDate < date) {
+            Node* left = currentNode->left;
+            Node* right = currentNode->right;
+
+            delete currentNode;
+
+            // Рекурсивно удаляем узлы из левого и правого поддеревьев
+            left = removeOlderNodes(left, date);
+            right = removeOlderNodes(right, date);
+
+            return nullptr; // Удаляем текущий узел, возвращаем nullptr
+        }
+
+        // Рекурсивно обрабатываем левое и правое поддеревья
+        currentNode->left = removeOlderNodes(currentNode->left, date);
+        currentNode->right = removeOlderNodes(currentNode->right, date);
+
+        return currentNode; // Возвращаем текущий узел
+    }
+
+    void displayInOrderTraversal(Node* currentNode) {
+        if (currentNode != nullptr) {
+            displayInOrderTraversal(currentNode->left);
+            cout << "Filename: " << currentNode->filename << ", Creation Date: " << currentNode->creationDate << endl;
+            displayInOrderTraversal(currentNode->right);
+        }
+    }
+
+    void clearTree(Node* currentNode) {
+        if (currentNode != nullptr) {
+            clearTree(currentNode->left);
+            clearTree(currentNode->right);
+            delete currentNode;
+        }
+    }
+};
+
+int main() {
+    BinaryTree fileTree;
+
+    // Добавление записей в дерево
+    fileTree.insert("file1.txt", "2023-01-01");
+    fileTree.insert("file2.txt", "2022-12-15");
+    fileTree.insert("file3.txt", "2022-11-30");
+    fileTree.insert("file4.txt", "2023-02-10");
+    fileTree.insert("file5.txt", "2023-01-20");
+
+    // Вывод содержимого дерева перед удалением
+    cout << "Before removal:" << endl;
+    fileTree.displayInOrder();
+
+    // Ввод даты для удаления
+    string removalDate;
+    cout << "Enter date to remove files created before: ";
+    cin >> removalDate;
+
+    // Удаление записей из дерева
+    fileTree.removeOlderThan(removalDate);
+
+    // Вывод содержимого дерева после удаления
+    cout << "After removal:" << endl;
+    fileTree.displayInOrder();
+
+    return 0;
+}

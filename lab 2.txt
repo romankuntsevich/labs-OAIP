@@ -1,0 +1,148 @@
+#include <iostream>
+using namespace std;
+
+struct Node {
+    int data;
+    Node* next;
+};
+
+class Queue {
+private:
+    Node* front;
+    Node* rear;
+
+public:
+    Queue() {
+        front = rear = nullptr;
+    }
+
+    ~Queue() {
+        while (!isEmpty()) {
+            dequeue();
+        }
+    }
+
+    bool isEmpty() {
+        return (front == nullptr);
+    }
+
+    void enqueue(int value) {
+        Node* newNode = new Node;
+        newNode->data = value;
+        newNode->next = nullptr;
+
+        if (isEmpty()) {
+            front = rear = newNode;
+        } else {
+            rear->next = newNode;
+            rear = newNode;
+        }
+    }
+
+    int dequeue() {
+        if (isEmpty()) {
+            cout << "Queue is empty." << endl;
+            return -1;
+        }
+
+        int value = front->data;
+        Node* temp = front;
+
+        if (front == rear) {
+            front = rear = nullptr;
+        } else {
+            front = front->next;
+        }
+
+        delete temp;
+        return value;
+    }
+
+    void display() {
+        if (isEmpty()) {
+            cout << "Queue is empty." << endl;
+            return;
+        }
+
+        Node* temp = front;
+        while (temp != nullptr) {
+            cout << temp->data << " ";
+            temp = temp->next;
+        }
+        cout << endl;
+    }
+
+    void connectToRing(int value) {
+        Node* newNode = new Node;
+        newNode->data = value;
+        newNode->next = front;
+        rear->next = newNode;
+        rear = newNode;
+    }
+
+    void removeElement(int value) {
+        Node* temp = front;
+        Node* prev = nullptr;
+
+        while (temp != nullptr) {
+            if (temp->data == value) {
+                if (prev != nullptr) {
+                    prev->next = temp->next;
+                } else {
+                    front = temp->next;
+                }
+
+                if (temp == rear) {
+                    rear = prev;
+                }
+
+                delete temp;
+                break;
+            }
+
+            prev = temp;
+            temp = temp->next;
+        }
+    }
+
+    void distributeToRings(Queue* rings[], int numRings) {
+        Node* temp = front;
+
+        while (temp != nullptr) {
+            Node* nextNode = temp->next;
+            int ringIndex = temp->data % numRings;
+
+            rings[ringIndex]->enqueue(temp->data);
+            removeElement(temp->data);
+
+            temp = nextNode;
+        }
+    }
+};
+
+int main() {
+    // Создание и инициализация кольцевых очередей
+    const int numRings = 3;
+    Queue* rings[numRings];
+
+    for (int i = 0; i < numRings; i++) {
+        rings[i] = new Queue();
+    }
+
+    // Создание и инициализация общей очереди
+    Queue queue;
+    queue.enqueue(10);
+    queue.enqueue(20);
+    queue.enqueue(30);
+    queue.enqueue(40);
+    queue.enqueue(50);
+
+    // Вывод содержимого общей очереди
+    cout << "Queue contents: ";
+    queue.display();
+
+    // Подсоединение нового элемента к указанному кольцу
+    int ringIndex = 1;
+    int newValue = 60;
+    rings[ringIndex]->connectToRing(newValue);
+    cout << "Connected " <<

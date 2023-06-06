@@ -1,0 +1,48 @@
+#include <iostream>
+#include <stack>
+#include <string>
+using namespace std;
+
+bool isOperator(char c) {
+    return (c == '+' || c == '-' || c == '*' || c == '/');
+}
+
+string prefixToPostfix(const string& prefixExpression) {
+    stack<string> operandStack;
+
+    // Обратный проход по строке в префиксной форме
+    for (int i = prefixExpression.length() - 1; i >= 0; i--) {
+        char c = prefixExpression[i];
+
+        if (isOperator(c)) {
+            // Извлечение двух операндов из стека и объединение их с оператором в постфиксную форму
+            string operand1 = operandStack.top();
+            operandStack.pop();
+            string operand2 = operandStack.top();
+            operandStack.pop();
+
+            string postfixExpression = operand1 + operand2 + c;
+            operandStack.push(postfixExpression);
+        } else {
+            // Операнд - добавляем его в стек
+            string operand(1, c);
+            operandStack.push(operand);
+        }
+    }
+
+    // Получение окончательного выражения в постфиксной форме
+    string postfixExpression = operandStack.top();
+    operandStack.pop();
+
+    return postfixExpression;
+}
+
+int main() {
+    string prefixExpression = "*+AB-CD";
+    string postfixExpression = prefixToPostfix(prefixExpression);
+
+    cout << "Prefix Expression: " << prefixExpression << endl;
+    cout << "Postfix Expression: " << postfixExpression << endl;
+
+    return 0;
+}
